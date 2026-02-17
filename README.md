@@ -47,8 +47,9 @@ Follow these instructions to set up and run the Document Buddy App on your local
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/GURPREETKAURJETHRA/RAG-Based-LLM-Chatbot.git
+git clone https://github.com/tejas79883/RAG-Based-LLM-Chatbot.git
 cd RAG-Based-LLM-Chatbot
+
 ```
 
 2. Create a Virtual Environment
