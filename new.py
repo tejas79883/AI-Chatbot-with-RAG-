@@ -1,9 +1,9 @@
-# app.py
+# new.py
 
 import streamlit as st
 from streamlit import session_state
 import time
-import base64
+import base64 
 import os
 from vectors import EmbeddingsManager  # Import the EmbeddingsManager class
 from chatbot import ChatbotManager     # Import the ChatbotManager class
@@ -39,12 +39,12 @@ st.set_page_config(
 # Sidebar
 with st.sidebar:
     # You can replace the URL below with your own logo URL or local image path
-    st.image("logo.png", use_column_width=True)
+    st.image("logo.png", width="stretch")
     st.markdown("### 📚 Your Personal Document Assistant")
     st.markdown("---")
     
     # Navigation Menu
-    menu = ["🏠 Home", "🤖 Chatbot", "📧 Contact"]
+    menu = ["🏠 Home", "🤖 Chatbot",]
     choice = st.selectbox("Navigate", menu)
 
 # Home Page
@@ -117,16 +117,15 @@ elif choice == "🤖 Chatbot":
                     st.success(result)
                     
                     # Initialize the ChatbotManager after embeddings are created
-                    if st.session_state['chatbot_manager'] is None:
-                        st.session_state['chatbot_manager'] = ChatbotManager(
-                            model_name="BAAI/bge-small-en",
-                            device="cpu",
-                            encode_kwargs={"normalize_embeddings": True},
-                            llm_model="llama3.2:3b",
-                            llm_temperature=0.7,
-                            qdrant_url="http://localhost:6333",
-                            collection_name="vector_db"
-                        )
+                    st.session_state['chatbot_manager'] = ChatbotManager(
+                        model_name="BAAI/bge-small-en",
+                        device="cpu",
+                        encode_kwargs={"normalize_embeddings": True},
+                        llm_model="phi3:mini",   # 👈 force correct model
+                        llm_temperature=0.3,
+                        qdrant_url="http://localhost:6333",
+                        collection_name="vector_db"
+                    )
                     
                 except FileNotFoundError as fnf_error:
                     st.error(fnf_error)
@@ -166,18 +165,6 @@ elif choice == "🤖 Chatbot":
                 st.chat_message("assistant").markdown(answer)
                 st.session_state['messages'].append({"role": "assistant", "content": answer})
 
-# Contact Page
-elif choice == "📧 Contact":
-    st.title("📬 Contact Us")
-    st.markdown("""
-    We'd love to hear from you! Whether you have a question, feedback, or want to contribute, feel free to reach out.
-
-    - **Email:** [developer@example.com](mailto:aianytime07@gmail.com) ✉️
-    - **GitHub:** [Contribute on GitHub](https://github.com/AIAnytime/Document-Buddy-App) 🛠️
-
-    If you'd like to request a feature or report a bug, please open a pull request on our GitHub repository. Your contributions are highly appreciated! 🙌
-    """)
 
 # Footer
 st.markdown("---")
-st.markdown("© 2024 Document Buddy App by AI Anytime. All rights reserved. 🛡️")

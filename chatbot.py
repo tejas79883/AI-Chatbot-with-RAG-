@@ -5,8 +5,9 @@ from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import Qdrant
 from langchain_ollama import ChatOllama
 from qdrant_client import QdrantClient
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
+from langchain_community.vectorstores import Qdrant as QdrantVectorStore
 import streamlit as st
 
 class ChatbotManager:
@@ -15,7 +16,7 @@ class ChatbotManager:
         model_name: str = "BAAI/bge-small-en",
         device: str = "cpu",
         encode_kwargs: dict = {"normalize_embeddings": True},
-        llm_model: str = "llama3.2:3b",
+        llm_model: str = "phi3:mini",
         llm_temperature: float = 0.7,
         qdrant_url: str = "http://localhost:6333",
         collection_name: str = "vector_db",
@@ -51,9 +52,9 @@ class ChatbotManager:
         self.llm = ChatOllama(
             model=self.llm_model,
             temperature=self.llm_temperature,
-            # Add other parameters if needed
+            num_ctx=2048,
+            num_predict=256,
         )
-
         # Define the prompt template
         self.prompt_template = """Use the following pieces of information to answer the user's question.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
@@ -71,11 +72,12 @@ Helpful answer:
         )
 
         # Initialize the Qdrant vector store
-        self.db = Qdrant(
+
+        self.db = QdrantVectorStore(
             client=self.client,
+            collection_name=self.collection_name,
             embeddings=self.embeddings,
-            collection_name=self.collection_name
-        )
+)
 
         # Initialize the prompt
         self.prompt = PromptTemplate(
@@ -84,7 +86,9 @@ Helpful answer:
         )
 
         # Initialize the retriever
-        self.retriever = self.db.as_retriever(search_kwargs={"k": 1})
+        self.retriever = self.db.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 4})
 
         # Define chain type kwargs
         self.chain_type_kwargs = {"prompt": self.prompt}
@@ -110,8 +114,8 @@ Helpful answer:
             str: The chatbot's response.
         """
         try:
-            response = self.qa.run(query)
-            return response  # 'response' is now a string containing only the 'result'
+            response = self.qa.invoke({"query": query})
+            return response["result"]  # 'response' is now a string containing only the 'result'
         except Exception as e:
             st.error(f"⚠️ An error occurred while processing your request: {e}")
             return "⚠️ Sorry, I couldn't process your request at the moment."
